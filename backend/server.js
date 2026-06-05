@@ -1,9 +1,12 @@
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
+import connectDB from "./config/db.js";
+import Task from "./models/Task.js";
 
 const app = express();
 
-let tasks = [];
-let id = 1;
+connectDB();
 
 //Middleware
 app.use(express.json())
@@ -16,77 +19,131 @@ app.get("/", (req, res) => {
 
 
 // Get All tasks
-app.get("/tasks", (req, res) => {
-    res.status(200).json(tasks);
-})
+app.get("/tasks", async (req, res) => {
+    try {
+
+        const tasks = await Task.find();
+
+        res.status(200).json(tasks);
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+});
 
 
 // Get task by id
-app.get("/tasks/:id", (req, res) => {
-    const taskId = Number(req.params.id);
+app.get("/tasks/:id", async (req, res) => {
+    try {
 
-    const task = tasks.find(t => t.id == taskId);
-    if (!task) {
-        return res.status(404).json({
-            message: 'Task not found'
+        const task = await Task.findById(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.json(task);
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
         });
+
     }
-    res.json(task);
 });
 
 
 // post a task
-app.post("/tasks", (req, res) => {
-    const task = {
-        id: id++,
-        title: req.body.title
-    };
+app.post("/tasks", async (req, res) => {
+    try {
 
-    tasks.push(task)
+        const task = await Task.create({
+            title: req.body.title
+        });
 
-    res.status(201).json({
-        message: 'Task Created',
-        task: task
-    });
+        res.status(201).json({
+            message: "Task Created",
+            task
+        });
+
+    } catch (error) {
+
+        res.status(400).json({
+            message: error.message
+        });
+
+    }
 });
 
 
 // Delete a Task
-app.delete("/tasks/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const taskExists = tasks.find(t => t.id == id);
+app.delete("/tasks/:id", async (req, res) => {
+    try {
 
-    if (!taskExists) {
-        return res.status(404).json({
-            message: "Task not found"
+        const task = await Task.findByIdAndDelete(req.params.id);
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Task Deleted Successfully"
         });
+
+    } catch (error) {
+
+        res.status(400).json({
+            message: error.message
+        });
+
     }
-    tasks = tasks.filter(t => t.id != id);
-    res.json({
-        message: "Task Deleted Successfully"
-    });
 });
 
-
 // Updating a task
-app.patch("/tasks/:id",(req,res)=>{
-    const id=Number(req.params.id);
-    const task=tasks.find(t=> t.id==id);
+app.patch("/tasks/:id", async (req, res) => {
+    try {
 
-    if (!task){
-        return res.status(404).json({
-            message:"Task not found"
+        const task = await Task.findByIdAndUpdate(
+            req.params.id,
+            {
+                title: req.body.title
+            },
+            {
+                returnDocument: "after",
+                runValidators: true
+            }
+        );
+
+        if (!task) {
+            return res.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Task Updated",
+            task
         });
+
+    } catch (error) {
+
+        res.status(400).json({
+            message: error.message
+        });
+
     }
-    if(req.body.title){
-        task.title=req.body.title;
-    }
-    res.json({
-        message:"Task Updated",task
-    });
 });
 
 // Running Backend
-app.listen(5000, () => {
-    console.log("Server runinng on port 5000");
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
 }); 
