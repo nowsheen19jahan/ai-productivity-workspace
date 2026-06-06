@@ -12,6 +12,15 @@ connectDB();
 //Middleware
 app.use(express.json())
 
+const logger = (req, res, next) => {
+    console.log("Middleware Executed");
+    console.log(req.method);
+    console.log(req.url);
+    next();
+};
+
+app.use(logger);
+
 // Routes
 app.use("/tasks", taskRoutes);
 
