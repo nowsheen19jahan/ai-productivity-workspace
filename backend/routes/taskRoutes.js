@@ -6,6 +6,8 @@ import {
     updateTask,
     deleteTask
 } from "../controllers/taskController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
+import { ownershipMiddleware } from "../middleware/ownershipMiddleware.js";
 
 const router = express.Router();
 
@@ -18,12 +20,11 @@ const logger = (req, res, next) => {
 // Middleware
 router.use(logger);
 
-
-router.get("/", getTasks);
-router.post("/", createTask);
-router.get("/:id", getTaskById);
-router.patch("/:id", updateTask);
-router.delete("/:id",deleteTask);
+router.get("/", authMiddleware, getTasks);
+router.post("/", authMiddleware, createTask);
+router.get("/:id", authMiddleware, ownershipMiddleware, getTaskById);
+router.patch("/:id", authMiddleware, ownershipMiddleware, updateTask);
+router.delete("/:id", authMiddleware, ownershipMiddleware, deleteTask);
 
 
 export default router;
