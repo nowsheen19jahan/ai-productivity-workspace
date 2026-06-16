@@ -2,10 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import connectDB from "./config/db.js";
-import Task from "./models/Task.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-
+import noteRoutes from "./routes/noteRoutes.js";
 const app = express();
 
 connectDB();
@@ -25,6 +24,7 @@ app.use(logger);
 // Routes
 app.use("/tasks", taskRoutes);
 app.use("/users", userRoutes);
+app.use("/notes", noteRoutes);
 
 // Home 
 app.get("/", (req, res) => {

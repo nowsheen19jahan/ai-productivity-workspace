@@ -42,7 +42,12 @@ export const createTask = async (req, res) => {
 // GET by ID method
 export const getTaskById = async (req, res) => {
     try {
-        return res.status(200).json(req.task);
+        const task = req.resource;
+
+        return res.status(200).json({
+            message: "Task fetched successfully",
+            task
+        });
     }
     catch (error) {
         return res.status(500).json({
@@ -54,12 +59,14 @@ export const getTaskById = async (req, res) => {
 // PATCH Method
 export const updateTask = async (req, res) => {
     try {
-        req.task.title = req.body.title;
-        await req.task.save();
+        const task = req.resource;
+
+        task.title = req.body.title;
+        await task.save();
 
         return res.status(200).json({
             message: "Task Updated",
-            task: req.task
+            task
         });
     }
     catch (error) {
@@ -72,7 +79,9 @@ export const updateTask = async (req, res) => {
 // DELETE Method
 export const deleteTask = async (req, res) => {
     try {
-        await req.task.deleteOne();
+        const task = req.resource;
+
+        await task.deleteOne();
 
         return res.status(200).json({
             message: "Task Deleted Successfully"
