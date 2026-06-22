@@ -1,22 +1,154 @@
 import Note from "../models/Note.js";
+import { processTags } from "../utils/processTags.js";
+
+const MAX_TAGS = 8;
 
 // GET - View Note
 export const getNotes = async (req, res) => {
     try {
-        const notes = await Note.find({ user: req.user.userId }).sort({ createdAt: -1 });
+        const {
+            search,
+            tags,
+            pinned,
+            sort
+        } = req.query;
+
+        let sortOption = {
+            createdAt: -1
+        };
+
+        if (sort === "oldest") {
+            sortOption = {
+                createdAt: 1
+            };
+        }
+        if (sort === "title") {
+            sortOption = {
+                title: 1
+            };
+        }
+        if (sort === "pinned") {
+            sortOption = {
+                pinned: -1,
+                createdAt: -1
+            };
+        }
+
+        const allowedSorts = [
+            "newest",
+            "oldest",
+            "title",
+            "pinned"
+        ];
+
+        if (
+            sort !== undefined &&
+            !allowedSorts.includes(sort)
+        ) {
+            return res.status(400).json({
+                message:
+                    "Invalid sort option"
+            });
+        }
+
+        const page = Math.max(
+            Number(req.query.page) || 1,
+            1
+        );
+
+        const limit = Math.min(
+            Number(req.query.limit) || 10,
+            20
+        );
+
+        const skip = (page - 1) * limit;
+
+        const query = {
+            user: req.user.userId
+        };
+
+
+        if (search) {
+            query.$or = [
+                {
+                    title: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    content: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+            ];
+        }
+
+
+        if (pinned !== undefined) {
+            query.pinned = pinned === "true";
+        }
+
+
+        if (tags) {
+
+            const tagArray = tags
+                .split(",")
+                .map(tag =>
+                    tag.trim().toLowerCase()
+                )
+                .filter(tag =>
+                    tag.length > 0
+                );
+
+            query.tags = {
+                $in: tagArray
+            };
+        }
+
+
+        const totalNotes =
+            await Note.countDocuments(query);
+
+        const totalPages =
+            Math.ceil(totalNotes / limit);
+
+        const hasNextPage =
+            page < totalPages;
+
+        const hasPreviousPage =
+            page > 1;
+
+
+        const notes = await Note.find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
 
         return res.status(200).json({
             message: "Notes fetched successfully",
+
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalNotes,
+                limit,
+                hasNextPage,
+                hasPreviousPage
+            },
+
             notes
         });
 
     }
     catch (error) {
+
         return res.status(500).json({
             message: "Internal server error"
         });
-    }
 
+    }
 };
 
 // GET - Note by ID
@@ -65,16 +197,9 @@ export const createNote = async (req, res) => {
             });
         }
         if (tags) {
-            processedTags = tags
-                .map(tag => tag.trim())
-                .filter(tag => tag.length > 0);
+            processedTags = processTags(tags);
 
-            processedTags = [
-                ...new Set(processedTags)
-            ];
-
-
-            if (processedTags.length > 8) {
+            if (processedTags.length > MAX_TAGS) {
                 return res.status(400).json({
                     message: "Maximum 8 tags allowed"
                 });
@@ -155,15 +280,9 @@ export const updateNote = async (req, res) => {
 
         if (tags !== undefined) {
 
-            let processedTags = tags
-                .map(tag => tag.trim())
-                .filter(tag => tag.length > 0);
+            const processedTags = processTags(tags);
 
-            processedTags = [
-                ...new Set(processedTags)
-            ];
-
-            if (processedTags.length > 8) {
+            if (processedTags.length > MAX_TAGS) {
                 return res.status(400).json({
                     message: "Maximum 8 tags allowed"
                 });

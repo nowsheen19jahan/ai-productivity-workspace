@@ -5,6 +5,8 @@ import connectDB from "./config/db.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
+
 const app = express();
 
 connectDB();
@@ -25,6 +27,7 @@ app.use(logger);
 app.use("/tasks", taskRoutes);
 app.use("/users", userRoutes);
 app.use("/notes", noteRoutes);
+app.use("/settings", settingsRoutes);
 
 // Home 
 app.get("/", (req, res) => {
@@ -33,5 +36,5 @@ app.get("/", (req, res) => {
 
 // Running Backend
 app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+    console.log(`Server running on port ${process.env.PORT}`);
 }); 

@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Task from "../models/Task.js";
+import Settings from "../models/Settings.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -31,6 +32,10 @@ export const signup = async (req, res) => {
             password: hashedPassword
         });
 
+        const settings = await Settings.create({
+            user: user._id
+        });
+
         const safeUser = await User.findById(user._id)
             .select("-password");
 
@@ -42,7 +47,7 @@ export const signup = async (req, res) => {
     } catch (error) {
 
         return res.status(500).json({
-            message: "Internal Server Error"
+            message: error.message
         });
 
     }
@@ -62,7 +67,7 @@ export const login = async (req, res) => {
 
         const user = await User.findOne({ email });
 
-        
+
         if (!user) {
             return res.status(401).json({
                 message: "Invalid credentials"
@@ -267,52 +272,52 @@ export const updateProfilePassword = async (req, res) => {
 };
 
 // Delete User
-export const deleteProfile=async (req,res)=>{
-    try{
-        const {password} =req.body;
-        
-        if (!password){
+export const deleteProfile = async (req, res) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
             return res.status(400).json({
                 message: "Password is required"
             });
         }
 
         const user = await User.findById(
-    req.user.userId
-);
-        if (!user){
+            req.user.userId
+        );
+        if (!user) {
             return res.status(404).json({
-                message:"User not found"
+                message: "User not found"
             });
         }
 
 
-        const isMatch= await bcrypt.compare(
+        const isMatch = await bcrypt.compare(
             password,
             user.password
         );
 
-        if (!isMatch){
+        if (!isMatch) {
             return res.status(401).json({
-                message:"Incorrect password"
+                message: "Incorrect password"
             });
         }
-        
-        
+
+
         await Task.deleteMany({
-            user:user._id
+            user: user._id
         });
 
         await user.deleteOne();
 
         return res.status(200).json({
-            message:"Profile Deleted successfully"
+            message: "Profile Deleted successfully"
         });
 
     }
-    catch(error){
+    catch (error) {
         return res.status(500).json({
-            message:"Internal server error"
+            message: "Internal server error"
         });
 
     }
