@@ -1,12 +1,13 @@
-import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
+import express from "express";
 import connectDB from "./config/db.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/users", userRoutes);
 app.use("/notes", noteRoutes);
 app.use("/settings", settingsRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/ai", aiRoutes);
 
 // Home 
 app.get("/", (req, res) => {
