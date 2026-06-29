@@ -1,9 +1,9 @@
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-import { classifyIntent } from "../controllers/aiController.js";
+import { chatWithAI } from "../controllers/aiController.js";
 
 const router = express.Router();
 
-router.post("/intent", authMiddleware, classifyIntent);
+router.post("/chat", authMiddleware, chatWithAI);
 
 export default router;

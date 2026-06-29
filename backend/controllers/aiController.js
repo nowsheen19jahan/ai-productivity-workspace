@@ -1,30 +1,43 @@
-import { detectIntent } from "../services/geminiService.js";
+import { processAIMessage } from "../services/aiService.js";
 
-export const classifyIntent = async (req, res) => {
+export const chatWithAI = async (req, res) => {
+
     try {
-        console.log(
-            "CONTROLLER HIT"
-        );
+
         const { message } = req.body;
 
-        if (!message || !message.trim()) {
+        if (!message?.trim()) {
+
             return res.status(400).json({
                 message: "Message is required"
             });
+
         }
 
-        const intent = await detectIntent(
-            message.trim()
-        );
+        const userId= req.user.userId;
+
+        const answer =
+            await processAIMessage(
+                userId,
+                message
+            );
 
         return res.status(200).json({
-            message: "Intent detected successfully",
-            intent
+
+            message: "AI response generated successfully",
+
+            answer
+
         });
 
     } catch (error) {
+
         return res.status(500).json({
+
             message: error.message
+
         });
+
     }
+
 };
