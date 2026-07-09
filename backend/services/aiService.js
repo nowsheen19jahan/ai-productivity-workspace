@@ -8,7 +8,7 @@ import { buildTaskPrompt } from "../prompt/taskPrompt.js";
 import { extractNoteQuery } from "../utils/noteQueryExtractor.js";
 import { buildNoteContext } from "../context/noteContext.js";
 import { buildNotePrompt } from "../prompt/notePrompt.js";
-
+// Both
 import { buildBothPrompt } from "../prompt/bothPrompt.js";
 import { generateAnswer } from "./geminiService.js";
 
@@ -52,7 +52,11 @@ export const processAIMessage = async (userId, message) => {
                     buildNotePrompt(context);
 
                 const response =
-                    await generateAnswer(prompt);
+                    await generateAnswer(
+                        userId,
+                        message,
+                        prompt
+                    );
 
                 return response;
 
