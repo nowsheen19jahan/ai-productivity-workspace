@@ -20,15 +20,17 @@ export const generateAnswer = async (prompt) => {
 
         return result.response.text();
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(
-            "Gemini Error:",
+            "[Gemini Service]",
             error.message
         );
 
-        throw error;
-
+        throw new Error(
+            "AI_SERVICE_UNAVAILABLE"
+        );
     }
 
 };

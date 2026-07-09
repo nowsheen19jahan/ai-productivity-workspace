@@ -4,37 +4,37 @@ export const chatWithAI = async (req, res) => {
 
     try {
 
+        const userId = req.user.userId;
+
         const { message } = req.body;
 
-        if (!message?.trim()) {
-
-            return res.status(400).json({
-                message: "Message is required"
-            });
-
-        }
-
-        const userId= req.user.userId;
-
-        const answer =
+        const response =
             await processAIMessage(
                 userId,
                 message
             );
 
-        return res.status(200).json({
+        return res.json({
 
-            message: "AI response generated successfully",
+            success: true,
 
-            answer
+            response
 
         });
 
     } catch (error) {
 
+        console.error(
+            "[AI Controller]",
+            error.message
+        );
+
         return res.status(500).json({
 
-            message: error.message
+            success: false,
+
+            message:
+                "Sorry, the AI assistant is temporarily unavailable. Please try again later."
 
         });
 
